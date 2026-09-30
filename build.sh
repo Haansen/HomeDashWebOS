@@ -13,7 +13,7 @@ ares-package --no-minify app service -o "$tmp/full" >/dev/null
 mv "$tmp"/full/*.ipk "dist/homedash_$version.ipk"
 
 cp -r app service "$tmp/"
-sed -i '/"defaultWindowType"/d; /"transparent"/d' "$tmp/app/appinfo.json"
+node -e 'const f = process.argv[1], a = JSON.parse(require("fs").readFileSync(f)); delete a.defaultWindowType; delete a.transparent; require("fs").writeFileSync(f, JSON.stringify(a, null, 2) + "\n");' "$tmp/app/appinfo.json"
 echo 'const OVERLAY_WINDOW = false;' > "$tmp/app/variant.js"
 ares-package --no-minify "$tmp/app" "$tmp/service" -o "$tmp/store" >/dev/null
 mv "$tmp"/store/*.ipk "dist/homedash-store_$version.ipk"

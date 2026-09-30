@@ -5,14 +5,16 @@
   "type": "web",
   "main": "index.html",
   "title": "HomeDash",
+  "appDescription": "Home Assistant on your TV: rooms, cameras and notifications",
   "icon": "icon.png",
   "largeIcon": "largeIcon.png",
+  "splashBackground": "splash.png",
+  "resolution": "1920x1080",
   "bgColor": "#0e1014",
   "iconColor": "#1b2433",
   "disableBackHistoryAPI": true,
+  "spinnerOnLaunch": false,
   "requiredACG": [],
   "defaultWindowType": "overlay",
-  "transparent": true,
-  "spinnerOnLaunch": false,
-  "noSplashOnLaunch": true
+  "transparent": true
 }
