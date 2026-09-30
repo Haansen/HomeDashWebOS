@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>HomeDash for webOS – UX Scenario</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  body { font: 11pt/1.5 "Helvetica Neue", Arial, sans-serif; color: #1b1f24; }
+  h1 { font-size: 24pt; margin: 0 0 4pt; }
+  h2 { font-size: 15pt; margin: 22pt 0 6pt; border-bottom: 1px solid #ccc; padding-bottom: 3pt; }
+  h3 { font-size: 12pt; margin: 14pt 0 4pt; }
+  .meta { color: #555; margin: 0 0 14pt; }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 10pt; }
+  th, td { border: 1px solid #bbb; padding: 4pt 6pt; vertical-align: top; text-align: left; }
+  th { background: #eef1f5; }
+  img { width: 100%; border: 1px solid #ccc; border-radius: 4px; margin: 4pt 0 2pt; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; }
+  .note { background: #fff7d6; border: 1px solid #e6c95a; padding: 6pt 8pt; border-radius: 4px; }
+  ol li, ul li { margin: 2pt 0; }
+  .page { page-break-before: always; }
+  figcaption { font-size: 9pt; color: #555; }
+</style>
+</head>
+<body>
+
+<h1>HomeDash for webOS</h1>
+<p class="meta">UX scenario for app review · App ID io.github.haansen.homedash · Version 1.0.0 · Web app · 1920 × 1080 · webOS 23 and later</p>
+
+<h2>1. What the app is</h2>
+<p>HomeDash shows a Home Assistant smart home on the TV: rooms, lights, cameras, sensors, climate and more, controlled with the remote. It also lets Home Assistant show notifications on the TV. Home Assistant is an open-source home automation system that runs on the user's own server at home. The app connects only to that server.</p>
+
+<div class="note"><strong>For testing without a Home Assistant server:</strong> choose <strong>Try the demo</strong> on the first screen. The demo contains a complete example home (five rooms, three cameras, lights, climate, sensors, scenes, weather) and every feature works. Nothing is really connected. All steps below can be done in the demo.</div>
+
+<h2>2. Remote control</h2>
+<table>
+<tr><th>Button</th><th>What it does</th></tr>
+<tr><td>Arrow keys</td><td>Move between the menu on the left and the tiles. Left from the first tile goes to the menu. Up/down in the menu switches page immediately.</td></tr>
+<tr><td>OK (short press)</td><td>Toggle a light or switch, run a scene, open a camera.</td></tr>
+<tr><td>OK (long press, about one second)</td><td>Open the panel for the tile: brightness, color, temperature, volume, modes, alarm code, history, favorite and hide.</td></tr>
+<tr><td>Back</td><td>Close a panel, camera or notification. From a tile: go to the menu. From the menu: exit the app.</td></tr>
+<tr><td>Color and number buttons</td><td>Optional shortcuts assigned in Settings → Shortcut buttons.</td></tr>
+<tr><td>Magic Remote pointer</td><td>Fully supported: hover, click, click-and-hold for the panel, wheel to scroll.</td></tr>
+</table>
+
+<h2>3. First launch</h2>
+<ol>
+  <li>Start the app. The first screen searches the local network for a Home Assistant server and shows a QR code. <em>(Testers: skip to step 3.)</em></li>
+  <li>With a server: choose it and sign in with username and password on the TV, or scan the QR code and sign in from a phone.</li>
+  <li>Without a server: press down to <strong>Try the demo</strong> and press OK. The app opens the Home page of the demo home.</li>
+</ol>
+<div class="two">
+  <figure><img src="screenshots/01-setup.png" alt=""><figcaption>First screen with network search, QR code and the demo button</figcaption></figure>
+  <figure><img src="screenshots/02-home.png" alt=""><figcaption>Home page after signing in or starting the demo</figcaption></figure>
+</div>
+
+<h2 class="page">4. Test scenarios</h2>
+
+<h3>4.1 Home page</h3>
+<ol>
+  <li>The Home page shows cameras in a row, the weather forecast, scenes, favorites and everything that is on right now. The menu shows the number of active devices per room.</li>
+  <li>Move right into the tiles and down through the sections. Press OK on a light under "On right now": it turns off and the tile changes color. Press OK again: it turns on.</li>
+</ol>
+
+<h3>4.2 Rooms</h3>
+<ol>
+  <li>Press left to the menu and down to <strong>Living room</strong>. The page changes as soon as the menu item is focused.</li>
+  <li>Press right. Tiles are grouped by type: Lights, Climate, Media players, Vacuums, Scenes.</li>
+  <li>Hold OK on <strong>Ceiling light</strong>. A panel opens with Brightness, Color temperature and Color. Left/right changes the value, down moves to the next row, OK or Back closes.</li>
+  <li>Hold OK on <strong>Heat pump</strong>. The panel shows Temperature and the rows Mode and Fan; left/right cycles the options.</li>
+  <li>Hold OK on <strong>Living room</strong> (media player). The panel shows Volume, Source and the buttons previous, play/pause, next and mute.</li>
+</ol>
+<div class="two">
+  <figure><img src="screenshots/03-room.png" alt=""><figcaption>A room</figcaption></figure>
+  <figure><img src="screenshots/04-light-panel.png" alt=""><figcaption>Panel for a light</figcaption></figure>
+</div>
+
+<h3>4.3 Cameras</h3>
+<ol>
+  <li>Go to <strong>Cameras</strong> in the menu. The first tile "All live" opens the camera wall with all cameras at once; Back closes it.</li>
+  <li>Press OK on a camera: it opens full screen. Left/right switches camera, OK shrinks it to a small picture-in-picture in the corner so you can keep using the app, Back closes.</li>
+  <li>Under "Latest images", press OK on an image entity to view it full screen.</li>
+</ol>
+<div class="two">
+  <figure><img src="screenshots/07-camera-wall.png" alt=""><figcaption>Camera wall</figcaption></figure>
+  <figure><img src="screenshots/08-camera-view.png" alt=""><figcaption>Full-screen camera</figcaption></figure>
+</div>
+
+<h3 class="page">4.4 Hall: lock and alarm</h3>
+<ol>
+  <li>Go to <strong>Hallway</strong>. Press OK on <strong>Front door</strong> (lock). The app asks for a second OK before unlocking; press OK again and the state changes to Unlocked.</li>
+  <li>Hold OK on <strong>Home alarm</strong>. A number pad appears; enter digits with OK, then move down to the buttons Disarm, Arm home, Arm away.</li>
+</ol>
+
+<h3>4.5 Favorites and hiding</h3>
+<ol>
+  <li>Hold OK on any tile and choose <strong>Add to favorites</strong>. The tile now appears under Favorites on the Home page.</li>
+  <li>Hold OK on a tile and choose <strong>Hide</strong>. It disappears and a message says where to restore it: Settings → Hidden → Show again.</li>
+</ol>
+
+<h3>4.6 Settings</h3>
+<ol>
+  <li>Go to <strong>Settings</strong>. Each submenu shows its current value. Back inside a submenu returns to the list.</li>
+  <li><strong>Appearance:</strong> choose a theme; it applies immediately. The last tile changes the app language and reloads the app.</li>
+  <li><strong>Show:</strong> which entity types are shown. The list is built from the types that exist in the connected home.</li>
+  <li><strong>Weather:</strong> choose which weather source feeds the clock area and the forecast.</li>
+  <li><strong>Shortcut buttons:</strong> press any remote button to see its code; assign a color or number button to a light, scene or camera.</li>
+  <li><strong>Screensaver:</strong> choose after how many minutes it starts, cameras or clock only, and the transition. <strong>Start now</strong> previews it. Any button exits; OK on a camera opens that camera.</li>
+  <li><strong>Home Assistant:</strong> adds the TV to Home Assistant and creates notification scripts. Not available in the demo (the app says so).</li>
+  <li><strong>Account:</strong> sign out. This returns to the first screen.</li>
+</ol>
+<div class="two">
+  <figure><img src="screenshots/09-settings.png" alt=""><figcaption>Settings</figcaption></figure>
+  <figure><img src="screenshots/12-screensaver.png" alt=""><figcaption>Screensaver</figcaption></figure>
+</div>
+
+<h3>4.7 Notifications</h3>
+<p>Home Assistant can start the app with a message, a camera and buttons. The app shows a card with the text and a live camera image; Back closes it, the buttons perform actions in Home Assistant. In the demo, notifications cannot be triggered from outside, so this scenario needs a real Home Assistant.</p>
+<figure><img src="screenshots/13-notification.png" alt="" style="width:60%"><figcaption>Notification card (shown here on a neutral backdrop)</figcaption></figure>
+
+<h3>4.8 Exit</h3>
+<p>Press Back until the menu is focused, then Back once more: the app exits to the launcher.</p>
+
+<h2>5. Network and privacy</h2>
+<ul>
+  <li>The app communicates only with the user's own Home Assistant server (WebSocket and HTTP on the local network, or an address the user enters). It uses no server operated by the developer, and no analytics or advertising.</li>
+  <li>The sign-in is stored on the TV as a Home Assistant refresh token; the password is never stored. Sign out in Settings removes it.</li>
+  <li>While the QR code is shown, a small web server runs on the TV so that a phone on the same network can send the sign-in details. It stops when the user is signed in.</li>
+</ul>
+<p>Website: https://haansen.github.io/HomeDashWebOS/ · Source code: https://github.com/Haansen/HomeDashWebOS (MIT license)</p>
+
+</body>
+</html>
