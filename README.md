@@ -40,7 +40,7 @@ The app is not in the LG Content Store yet. Until then it is installed with LG's
 ares-setup-device --add tv -i "host=<TV IP>" -i "port=9922" -i "username=prisoner"
 ares-novacom --device tv --getkey        # enter the passphrase shown in Developer Mode
 ares-install --device tv homedash_<version>.ipk
-ares-launch --device tv com.frodan.homedash
+ares-launch --device tv io.github.haansen.homedash
 ```
 
 On first start the app searches the network for Home Assistant. Sign in on the TV, or scan the QR code and sign in from your phone. There is also a demo mode that needs no server.

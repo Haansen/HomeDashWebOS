@@ -1,7 +1,7 @@
 {
-  "id": "com.frodan.homedash",
+  "id": "io.github.haansen.homedash",
   "version": "1.0.0",
-  "vendor": "frodan",
+  "vendor": "Haansen",
   "type": "web",
   "main": "index.html",
   "title": "HomeDash",

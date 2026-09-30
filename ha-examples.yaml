@@ -35,7 +35,7 @@ script:
         data:
           command: system.launcher/launch
           payload:
-            id: com.frodan.homedash
+            id: io.github.haansen.homedash
             params:
               title: "{{ title | default('') }}"
               message: "{{ message | default('') }}"
@@ -58,7 +58,7 @@ script:
         data:
           command: system.launcher/launch
           payload:
-            id: com.frodan.homedash
+            id: io.github.haansen.homedash
             params:
               saver: true
 

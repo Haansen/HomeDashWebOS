@@ -819,7 +819,7 @@ const panelRows = `[...document.querySelectorAll("#dimmer-rows .prow")].map(x =>
   await b.key("right"); await b.key("ok"); await sleep(800);
   assert.deepStrictEqual(Object.keys(scriptsSaved), ["homedash_notify", "homedash_menu", "homedash_screensaver"]);
   assert.strictEqual(scriptsSaved.homedash_notify.sequence[1].target.entity_id, "media_player.ny_tv", "skripten pekar på den tillagda TV:n");
-  assert.strictEqual(scriptsSaved.homedash_notify.sequence[1].data.payload.id, "com.frodan.homedash");
+  assert.strictEqual(scriptsSaved.homedash_notify.sequence[1].data.payload.id, "io.github.haansen.homedash");
   assert.strictEqual(await b.js(`document.activeElement.className`), "tile dev action on");
   await b.key("right"); await b.key("ok"); await sleep(800);
   assert.deepStrictEqual(Object.keys(blueprintsSaved), ["homedash/camera_on_tv.yaml", "homedash/screensaver_when_idle.yaml"]);

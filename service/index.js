@@ -3,7 +3,7 @@ const crypto = require("crypto"), os = require("os");
 const { createPairServer } = require("./pair-server");
 
 const LIFETIME_MS = 10 * 60 * 1000; // the server shuts itself down if the app does not get to it
-const service = new Service("com.frodan.homedash.pair");
+const service = new Service("io.github.haansen.homedash.pair");
 let server = null, timer = null, activity = null;
 
 function lanIp() {

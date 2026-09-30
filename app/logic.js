@@ -16,7 +16,7 @@ const PRESS = ["button", "input_button", "scene"]; // state is only the time of 
 const LONG_PRESS_MS = 600;
 const SNAPSHOT_MS = 5000;
 const PROBE_MS = 2500; // how long each address gets during network discovery
-const PAIR_SERVICE = "luna://com.frodan.homedash.pair";
+const PAIR_SERVICE = "luna://io.github.haansen.homedash.pair";
 const NOTICE_SECONDS = 15, MENU_IDLE_MS = 30000;
 const THEMES = ["dark", "oled", "light", "ocean", "forest"];
 // remote buttons that can be mapped to an entity: the color buttons and the digits
@@ -197,7 +197,7 @@ function panelSpec(s) {
 
 // What the app can set up in Home Assistant: scripts and automation blueprints that target the chosen TV.
 // Texts are in English on purpose, since they end up in Home Assistant's own UI.
-const APP_ID = "com.frodan.homedash";
+const APP_ID = "io.github.haansen.homedash";
 const LAUNCH = (tv, params) => ({ action: "webostv.command", target: { entity_id: tv }, data: { command: "system.launcher/launch", payload: { id: APP_ID, params } } });
 const TV_ON = tv => ({ condition: "not", conditions: [{ condition: "state", entity_id: tv, state: ["off", "unavailable", "unknown"] }] });
 
