@@ -1,0 +1,18 @@
+{
+  "id": "com.frodan.homedash",
+  "version": "1.0.0",
+  "vendor": "frodan",
+  "type": "web",
+  "main": "index.html",
+  "title": "HomeDash",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "bgColor": "#0e1014",
+  "iconColor": "#1b2433",
+  "disableBackHistoryAPI": true,
+  "requiredACG": [],
+  "defaultWindowType": "overlay",
+  "transparent": true,
+  "spinnerOnLaunch": false,
+  "noSplashOnLaunch": true
+}

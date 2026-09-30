@@ -1,0 +1,6 @@
+{
+  "name": "homedash-test",
+  "private": true,
+  "scripts": { "test": "node unit.js && node pair.js && node e2e.js" },
+  "devDependencies": { "ws": "^8.18.0" }
+}

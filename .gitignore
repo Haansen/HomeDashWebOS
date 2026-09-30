@@ -1,0 +1,4 @@
+dist/
+.dev-token
+node_modules/
+test/cam.jpg

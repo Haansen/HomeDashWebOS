@@ -1,0 +1,6 @@
+{
+  "name": "com.frodan.homedash.pair",
+  "version": "1.0.0",
+  "description": "Serves the phone sign-in page during setup",
+  "main": "index.js"
+}

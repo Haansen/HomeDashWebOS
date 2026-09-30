@@ -1,0 +1,116 @@
+# Home Assistant examples for HomeDash. Replace the TV entity, the notify service and the triggers with your own.
+# Notifications are drawn by HomeDash on top of whatever the TV is showing.
+#
+# Launch parameters understood by the app (see README):
+#   title, message    text on the card
+#   camera            entity, e.g. camera.garage (live image)
+#   image             URL of an image instead of a camera, e.g. /local/picture.jpg
+#   timeout           seconds before the card closes (default 15). 0 = stays until Back is pressed.
+#   position          top-right (default), top-left, bottom-right, bottom-left
+#   actions           up to four buttons. Each has a label and either service + entity_id (+ data),
+#                     or event: the app then fires the event homedash_action with action = the event name.
+#   menu: true        opens the quick menu with favorites
+#   saver: true       starts the screensaver on top of the TV picture
+
+script:
+  tv_notice:
+    alias: "TV: show notification"
+    fields:
+      title: { example: "Doorbell" }
+      message: { example: "Someone is at the door" }
+      camera: { example: "camera.front_door" }
+      timeout: { example: 20 }
+      position: { example: "top-right" }
+      actions: { example: '[{"label": "Unlock", "service": "lock.unlock", "entity_id": "lock.front_door"}, {"label": "Ignore", "event": "ignore"}]' }
+    sequence:
+      # The webOS TV integration reports on, idle, playing or paused while the TV is running, so the condition is "not off"
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: media_player.living_room_tv
+            state: ["off", "unavailable", "unknown"]
+      - action: webostv.command
+        target:
+          entity_id: media_player.living_room_tv
+        data:
+          command: system.launcher/launch
+          payload:
+            id: com.frodan.homedash
+            params:
+              title: "{{ title | default('') }}"
+              message: "{{ message | default('') }}"
+              camera: "{{ camera | default('') }}"
+              timeout: "{{ timeout | default(15) }}"
+              position: "{{ position | default('top-right') }}"
+              actions: "{{ actions | default([]) }}"
+
+  tv_screensaver:
+    alias: "TV: start screensaver"
+    sequence:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: media_player.living_room_tv
+            state: ["off", "unavailable", "unknown"]
+      - action: webostv.command
+        target:
+          entity_id: media_player.living_room_tv
+        data:
+          command: system.launcher/launch
+          payload:
+            id: com.frodan.homedash
+            params:
+              saver: true
+
+automation:
+  - alias: "TV: show the front door when the doorbell rings"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.doorbell
+        to: "on"
+    action:
+      - action: script.tv_notice
+        data:
+          title: "Doorbell"
+          message: "Someone is at the door"
+          camera: camera.front_door
+          timeout: 30
+          actions:
+            - label: "Unlock"
+              service: lock.unlock
+              entity_id: lock.front_door
+            - label: "Ignore"
+              event: ignore
+
+  # A button in the notification sends an event back to Home Assistant
+  - alias: "TV: someone pressed Ignore on the TV"
+    trigger:
+      - platform: event
+        event_type: homedash_action
+        event_data:
+          action: ignore
+    action:
+      - action: notify.persistent_notification
+        data:
+          message: "The notification was ignored from the TV"
+
+  # Screensaver when the TV is on but nobody is in the room, e.g. no motion for 20 minutes
+  - alias: "TV: screensaver when the room is empty"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.living_room_motion
+        to: "off"
+        for: "00:20:00"
+    action:
+      - action: script.tv_screensaver
+
+  # Plain text notification through the TV's built-in toasts, no app needed
+  - alias: "TV: washing machine done"
+    trigger:
+      - platform: state
+        entity_id: sensor.washing_machine
+        to: "done"
+    action:
+      - action: notify.lg_webos_tv
+        data:
+          message: "The washing machine is done"

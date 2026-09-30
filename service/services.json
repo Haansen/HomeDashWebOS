@@ -1,0 +1,5 @@
+{
+  "id": "com.frodan.homedash.pair",
+  "description": "Serves the phone sign-in page during setup",
+  "services": [{ "name": "com.frodan.homedash.pair" }]
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<title>HomeDash</title>
+<link rel="stylesheet" href="style.css">
+<nav>
+  <div id="clock"></div>
+  <div id="date"></div>
+  <div id="weather"></div>
+  <div id="rail"></div>
+  <div id="status"></div>
+</nav>
+<main id="main"></main>
+<div id="viewer" hidden>
+  <video id="video" autoplay></video>
+  <img id="mjpeg" hidden>
+  <div id="viewer-bar"><b id="viewer-name"></b><span id="viewer-hint"></span></div>
+</div>
+<div id="dimmer" hidden>
+  <div id="dimmer-box">
+    <div id="dimmer-head"><b id="dimmer-name"></b><span id="dimmer-state"></span></div>
+    <div id="dimmer-rows"></div>
+    <div id="dimmer-actions"><button id="fav-btn"></button><button id="hide-btn" data-t="hide"></button></div>
+    <small id="dimmer-hint"></small>
+  </div>
+</div>
+<div id="setup" hidden>
+  <div id="pair" hidden>
+    <div id="pair-qr"></div>
+    <p data-t="scan"></p>
+  </div>
+  <div id="setup-box">
+    <h1 id="setup-title"></h1>
+    <p id="setup-msg"></p>
+    <div id="setup-servers"></div>
+    <form id="server-form">
+      <input id="server-url" data-t-placeholder="address" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button data-t="connect"></button>
+      <button type="button" id="demo-btn" data-t="demo"></button>
+    </form>
+    <form id="login-form" hidden>
+      <input id="login-user" data-t-placeholder="username" autocomplete="username" autocapitalize="off" spellcheck="false">
+      <input id="login-pass" data-t-placeholder="password" type="password" autocomplete="current-password">
+      <input id="login-code" data-t-placeholder="code" inputmode="numeric" autocomplete="one-time-code" hidden>
+      <button data-t="login"></button>
+      <button type="button" id="login-back" data-t="changeServer"></button>
+    </form>
+  </div>
+</div>
+<div id="card" hidden>
+  <div id="card-head"><img src="icon.png" alt=""><b>HomeDash</b><span id="card-time"></span></div>
+  <div id="card-media" hidden><img id="card-img" alt=""><span id="card-live" hidden></span></div>
+  <div id="card-text"><b id="card-title"></b><p id="card-msg"></p></div>
+  <div id="card-actions"></div>
+  <small id="card-hint"></small>
+  <i id="card-bar"></i>
+</div>
+<div id="drawer" hidden>
+  <div id="drawer-head"><img src="icon.png" alt=""><b>HomeDash</b></div>
+  <div id="drawer-list"></div>
+  <p id="drawer-info"></p>
+  <small data-t="menuHint"></small>
+</div>
+<div id="wall" hidden>
+  <div id="wall-grid"></div>
+  <div id="wall-bar"><span id="wall-page"></span><small id="wall-hint"></small></div>
+</div>
+<div id="saver" hidden>
+  <img id="saver-a" alt=""><img id="saver-b" alt="">
+  <div id="saver-info"><div id="saver-time"></div><div id="saver-date"></div><div id="saver-weather"></div></div>
+  <div id="saver-cam"></div>
+  <small id="saver-hint"></small>
+</div>
+<div id="toast" hidden></div>
+<script src="vendor/qrcode.js"></script>
+<script src="icons.js"></script>
+<script src="variant.js"></script>
+<script src="lang.js"></script>
+<script src="logic.js"></script>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+</html>
