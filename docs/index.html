@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HomeDash for webOS</title>
+<meta name="description" content="Home Assistant on LG webOS TVs: rooms, cameras, notifications on top of the TV picture, quick menu and screensaver.">
+<link rel="icon" href="store/icon-400.png">
+<meta property="og:title" content="HomeDash for webOS">
+<meta property="og:description" content="Home Assistant on LG webOS TVs.">
+<meta property="og:image" content="https://homedash.odenslatt.se/screenshots/02-home.png">
+<style>
+  :root { --bg: #0e1014; --glow: #1b2433; --tile: #ffffff12; --line: #ffffff1f; --text: #e8eaed; --muted: #9aa0a6; --accent: #4da3ff; --button: #2f7fd6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(1200px 700px at 70% -10%, var(--glow), var(--bg) 70%) var(--bg); color: var(--text);
+         font: 18px/1.55 "Helvetica Neue", Arial, sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 72px 0 40px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap; }
+  header img { width: 120px; height: 120px; border-radius: 28px; box-shadow: 0 20px 60px #000a; }
+  h1 { margin: 0; font-size: 46px; font-weight: 700; letter-spacing: -.01em; }
+  .tagline { margin: 6px 0 20px; color: var(--muted); font-size: 22px; }
+  .buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 12px 22px; border-radius: 12px; background: var(--tile); color: var(--text); font-weight: 600; }
+  .btn.primary { background: var(--button); color: #fff; }
+  .btn:hover { text-decoration: none; filter: brightness(1.15); }
+  .hero { margin: 24px 0 56px; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 80px #000c, 0 0 0 1px var(--line); }
+  .hero img { display: block; width: 100%; }
+  h2 { margin: 56px 0 18px; font-size: 30px; }
+  .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .card { padding: 22px; border-radius: 16px; background: var(--tile); box-shadow: inset 0 0 0 1px var(--line); }
+  .card h3 { margin: 0 0 8px; font-size: 20px; }
+  .card p { margin: 0; color: var(--muted); }
+  .shots { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .shots figure { margin: 0; }
+  .shots img { display: block; width: 100%; border-radius: 12px; box-shadow: 0 10px 30px #0008, 0 0 0 1px var(--line); }
+  .shots figcaption { padding: 8px 4px 0; color: var(--muted); font-size: 15px; }
+  ol, ul { color: var(--muted); }
+  li { margin: 6px 0; }
+  code { padding: 2px 6px; border-radius: 6px; background: #ffffff14; font-size: 15px; }
+  pre { padding: 16px 18px; border-radius: 12px; background: #000000aa; overflow-x: auto; color: #d5d8dd; font-size: 15px; }
+  footer { margin: 72px 0 40px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+  footer p { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <img src="store/icon-400.png" alt="HomeDash icon">
+  <div>
+    <h1>HomeDash for webOS</h1>
+    <p class="tagline">Home Assistant on your LG TV.</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://github.com/Haansen/HomeDashWebOS/releases/latest">Download</a>
+      <a class="btn" href="https://github.com/Haansen/HomeDashWebOS">Source on GitHub</a>
+      <a class="btn" href="#privacy">Privacy</a>
+    </div>
+  </div>
+</header>
+
+<div class="hero"><img src="screenshots/02-home.png" alt="HomeDash home screen with cameras, forecast, scenes and lights"></div>
+
+<p>HomeDash shows your whole Home Assistant on the TV: rooms, cameras and every entity type, controlled with the remote. Nothing is tied to a particular installation. Rooms, names and state texts come from the Home Assistant you sign in to, in your TV's language.</p>
+
+<h2>What it does</h2>
+<div class="grid">
+  <div class="card"><h3>Rooms and everything in them</h3><p>Lights, switches, climate, covers, locks, media players, sensors, scenes and more. Short press toggles, long press opens brightness, color, temperature, volume, modes, alarm PIN and 24-hour history.</p></div>
+  <div class="card"><h3>Cameras</h3><p>Live view, camera wall with several cameras at once, picture-in-picture, PTZ control for Frigate and ONVIF cameras, and the latest images from image entities.</p></div>
+  <div class="card"><h3>Notifications</h3><p>Home Assistant can show a card with text, a live camera image and buttons on the TV. In the developer build the card is drawn on top of whatever you are watching.</p></div>
+  <div class="card"><h3>Home screen</h3><p>Forecast, scenes, favorites and everything that is on right now, with the number of active devices per room.</p></div>
+  <div class="card"><h3>Screensaver</h3><p>Cameras sliding by with the clock and the weather, or a clock only. Starts after a chosen time or on request from Home Assistant.</p></div>
+  <div class="card"><h3>Made for the remote</h3><p>Arrow keys, OK and Back do everything. Color and number buttons can be mapped to lights, scenes or cameras.</p></div>
+  <div class="card"><h3>Sets up Home Assistant for you</h3><p>From Settings the app adds the TV to Home Assistant, creates the scripts and installs automation blueprints, so notifications work without writing YAML.</p></div>
+  <div class="card"><h3>Themes and languages</h3><p>Five themes and twelve languages. Home Assistant's own texts follow the TV language, so states read correctly in any language Home Assistant supports.</p></div>
+</div>
+
+<h2>Screenshots</h2>
+<div class="shots">
+  <figure><img src="screenshots/03-room.png" alt="A room"><figcaption>A room with its lights, climate and media player</figcaption></figure>
+  <figure><img src="screenshots/04-light-panel.png" alt="Light panel"><figcaption>Long press on a light: brightness, color temperature and color</figcaption></figure>
+  <figure><img src="screenshots/13-notification.png" alt="Notification"><figcaption>A notification with a live camera image and buttons</figcaption></figure>
+  <figure><img src="screenshots/14-quick-menu.png" alt="Quick menu"><figcaption>The quick menu with favorites</figcaption></figure>
+  <figure><img src="screenshots/07-camera-wall.png" alt="Camera wall"><figcaption>Camera wall</figcaption></figure>
+  <figure><img src="screenshots/12-screensaver.png" alt="Screensaver"><figcaption>Screensaver with cameras, clock and weather</figcaption></figure>
+  <figure><img src="screenshots/10-theme-light.png" alt="Light theme"><figcaption>Light theme</figcaption></figure>
+  <figure><img src="screenshots/09-settings.png" alt="Settings"><figcaption>Settings</figcaption></figure>
+</div>
+
+<h2>Getting started</h2>
+<ol>
+  <li>Install the app from the LG Content Store, or install the package from <a href="https://github.com/Haansen/HomeDashWebOS/releases/latest">GitHub</a> with LG's developer tools.</li>
+  <li>Start it. The app finds Home Assistant on your network by itself.</li>
+  <li>Sign in on the TV, or scan the QR code and sign in from your phone.</li>
+  <li>Open Settings → Home Assistant to create the notification scripts and blueprints.</li>
+</ol>
+<p>No Home Assistant yet? Choose <strong>Try the demo</strong> on the first screen to explore the app with a built-in example home.</p>
+
+<h2>Two builds</h2>
+<p>The <strong>store build</strong> runs in a regular window and is what the LG Content Store distributes. The <strong>developer build</strong> on GitHub uses an overlay window, so notifications, a pinned camera and the quick menu can be drawn on top of whatever the TV is showing. LG does not allow overlay windows for store apps, so that build is installed through Developer Mode.</p>
+
+<h2 id="privacy">Privacy</h2>
+<ul>
+  <li>The app talks only to your own Home Assistant, on your own network or through the address you enter. There is no server run by the app's author.</li>
+  <li>Your sign-in is stored on the TV as a Home Assistant refresh token, the same way the official Home Assistant apps do it. Your password is never stored. Sign out in Settings to remove it.</li>
+  <li>Settings such as favorites and hidden entities are stored on the TV and, if you choose, in your Home Assistant user profile so they follow you to other TVs.</li>
+  <li>The app collects no analytics, sends no telemetry and shows no advertising.</li>
+  <li>While the QR code is shown, the TV runs a small web server on your local network so your phone can send the sign-in details to the TV. It stops as soon as you are signed in.</li>
+</ul>
+
+<h2>Support</h2>
+<p>Questions and bug reports go to <a href="https://github.com/Haansen/HomeDashWebOS/issues">GitHub issues</a>. The source code is available under the MIT license.</p>
+
+<footer>
+  <p>HomeDash is an independent project and is not affiliated with LG or the Open Home Foundation. Home Assistant is a trademark of the Open Home Foundation.</p>
+  <p>Icons from Material Design Icons (Apache 2.0). QR codes by qrcode-generator (MIT).</p>
+</footer>
+
+</div>
+</body>
+</html>
