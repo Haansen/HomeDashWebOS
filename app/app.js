@@ -19,7 +19,7 @@ if (typeof document !== "undefined") (function () {
   const rows = {};
   let page = load("page", "home"), homeSet = new Set();
   let reg = {}, devArea = {}, areas = [], tr = {};
-  let ws, gen = 0, msgId = 0, pending = {}, subs = {}, services = {};
+  let ws, gen = 0, msgId = 0, pending = {}, subs = {}, services = {}, bearer = "", haBusy = "", haDone = {};
   let forecast = [], forecastFor = null, wallPage = 0, wallOpen = false, ptz = false;
   let viewing = null, pip = false, lastFocus = null;
   let dimming = null, dimArmed = false, panelRows = [], panelCode = ""; // the long-press panel
@@ -133,6 +133,7 @@ if (typeof document !== "undefined") (function () {
     let token;
     try { token = await accessToken(); } catch (e) { if (mine !== gen) return; return e.expired ? signOut(t("expired")) : retry(); }
     if (mine !== gen) return;
+    bearer = token;
     msgId = 0; pending = {};
     const sock = ws = isDemo() ? new DemoSocket() : new WebSocket(auth.url.replace(/^http/, "ws") + "/api/websocket");
     sock.onclose = retry;
@@ -372,6 +373,68 @@ if (typeof document !== "undefined") (function () {
     return true;
   }
 
+  // ---- setting up Home Assistant from the TV: the TV integration, scripts and blueprints ----
+
+  async function haRest(method, path, body) {
+    const r = await http(auth.url + path, { method, headers: { Authorization: "Bearer " + bearer, "Content-Type": "application/json" }, body: body == null ? undefined : JSON.stringify(body) }, 120000);
+    if (r.status === 401 || r.status === 403) throw new Error(t("needsAdmin"));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.status === 204 ? null : r.json();
+  }
+
+  const tvEntities = () => Object.keys(reg).filter(id => domainOf(id) === "media_player" && reg[id].platform === "webostv" && states[id]);
+  const chosenTv = () => (cfg.tv && states[cfg.tv] ? cfg.tv : tvEntities()[0]) || "";
+
+  // Adds this TV to Home Assistant through the webOS TV integration's own config flow. The TV asks the user to accept the connection.
+  async function addTv() {
+    if (isDemo()) return toast(t("notInDemo"));
+    if (haBusy) return;
+    const net = await luna("luna://com.webos.service.connectionmanager/getStatus");
+    const ip = (net.wired && net.wired.ipAddress) || (net.wifi && net.wifi.ipAddress);
+    if (!ip) return toast(t("tvNoIp"));
+    haBusy = "tv"; renderMain();
+    try {
+      let step = await haRest("POST", "/api/config/config_entries/flow", { handler: "webostv", show_advanced_options: false });
+      for (let i = 0; i < 4 && step && step.type === "form"; i++) {
+        if (step.step_id === "pairing") toast(t("tvAdding"), true);
+        const data = {};
+        (step.data_schema || []).forEach(f => { if (f.name === "host") data.host = ip; });
+        step = await haRest("POST", "/api/config/config_entries/flow/" + step.flow_id, data);
+      }
+      if (!step || step.type !== "create_entry") throw new Error(step && (step.reason || step.type) || "?");
+      haDone.tv = true;
+      toast(t("tvAdded"), true);
+      const entList = await send({ type: "config/entity_registry/list" }).catch(() => []); // the new entities
+      entList.forEach(e => { reg[e.entity_id] = e; });
+    } catch (e) { toast(t("tvFailed", (e && e.message) || "?")); }
+    haBusy = ""; renderMain();
+  }
+
+  async function createScripts() {
+    if (isDemo()) return toast(t("notInDemo"));
+    const tv = chosenTv();
+    if (!tv) return toast(t("tvMissing"));
+    haBusy = "scripts"; renderMain();
+    try {
+      const scripts = haScripts(tv), names = [];
+      for (const id of Object.keys(scripts)) { await haRest("POST", "/api/config/script/config/" + id, scripts[id]); names.push(scripts[id].alias.replace("HomeDash: ", "")); }
+      haDone.scripts = true;
+      toast(t("scriptsDone", names.join(", ")), true);
+    } catch (e) { toast((e && e.message) || t("failed")); }
+    haBusy = ""; renderMain();
+  }
+
+  async function saveBlueprints() {
+    if (isDemo()) return toast(t("notInDemo"));
+    haBusy = "blueprints"; renderMain();
+    try {
+      for (const path of Object.keys(HA_BLUEPRINTS)) await send({ type: "blueprint/save", domain: "automation", path, yaml: HA_BLUEPRINTS[path], allow_override: true });
+      haDone.blueprints = true;
+      toast(t("blueprintsDone"), true);
+    } catch (e) { toast((e && (e.message || e.code)) === "unauthorized" ? t("needsAdmin") : (e && e.message) || t("failed")); }
+    haBusy = ""; renderMain();
+  }
+
   // ---- pages ----
 
   function resetHome() {
@@ -424,6 +487,15 @@ if (typeof document !== "undefined") (function () {
         ? [actionTile("key:none", t("clearKey"), "", !cfg.keys[pickingKey], () => assignKey(pickingKey, null)),
            ...visible().filter(x => isCam(x) || action(x)).sort(favFirst).map(x => actionTile("key:" + x.entity_id, nameOf(x), title(domainOf(x.entity_id)), cfg.keys[pickingKey] === x.entity_id, () => assignKey(pickingKey, x.entity_id)))]
         : HOTKEYS.map(([code, name]) => actionTile("hotkey:" + code, keyName(name), cfg.keys[code] && states[cfg.keys[code]] ? nameOf(states[cfg.keys[code]]) : t("noHotkey"), !!cfg.keys[code], () => { pickingKey = code; renderMain(); focusMain(); }))],
+      ha: [t("haSection"), () => {
+        const tvs = tvEntities(), tv = chosenTv();
+        return [
+          ...(tvs.length > 1 ? tvs.map(id => actionTile("tv:" + id, nameOf(states[id]), t("chooseTv"), tv === id, () => { cfg.tv = id; saveSettings(); renderMain(); })) : []),
+          actionTile("ha:tv", t("tvInHa"), haBusy === "tv" ? t("tvAdding") : tv ? nameOf(states[tv]) : t("tvMissing"), !!tv, () => { if (!tv) addTv(); }),
+          actionTile("ha:scripts", t("scripts"), haBusy === "scripts" ? "…" : haDone.scripts ? t("scriptsDone", 3) : t("scriptsCreate"), !!haDone.scripts, createScripts),
+          actionTile("ha:blueprints", t("blueprints"), haBusy === "blueprints" ? "…" : haDone.blueprints ? t("blueprintsDone") : t("blueprintsCreate"), !!haDone.blueprints, saveBlueprints),
+        ];
+      }],
       saver: [t("saver"), () => [
         option("saverAfter", t("saverAfter"), SAVER_AFTER, v => v ? t("minutes", v) : t("saverOff"), idle),
         option("saverContent", t("saverContent"), ["cameras", "clock"], v => t(v === "clock" ? "saverClock" : "saverCameras")),
@@ -445,6 +517,7 @@ if (typeof document !== "undefined") (function () {
     const summary = { look: TEXT[LANG].themes[cfg.theme] || "", show: t("typesShown", cfg.domains.filter(d => count[d]).length), hiddenOnes: hiddenIds.length ? t("nHidden", hiddenIds.length) : t("nothing"),
       overTv: t(cfg.startMenu ? "quickMenu" : "fullApp"), weather: weatherEntity() ? nameOf(weatherEntity()) : t("noWeather"),
       hotkeys: t("nOn", Object.keys(cfg.keys).filter(k => cfg.keys[k]).length),
+      ha: chosenTv() ? nameOf(states[chosenTv()]) : t("tvMissing"),
       saver: cfg.saverAfter ? t("minutes", cfg.saverAfter) : t("saverOff"), account: auth ? auth.url.replace(/^https?:\/\//, "") : "" };
     return [[t("settings"), Object.keys(menu).map(k => actionTile("settings:" + k, menu[k][0], summary[k], false, () => { settingsSection = k; renderMain(); focusMain(); })), "grid"]];
   }

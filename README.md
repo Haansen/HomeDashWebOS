@@ -15,6 +15,7 @@ Nothing is tied to a particular installation: rooms, entity types, names and sta
 - **Notifications** on top of the TV picture, with text, live camera image and buttons that control Home Assistant
 - **Quick menu** with favorites along the edge of the screen
 - **Settings**: themes, which types to show, hidden entities, weather source, shortcut buttons on the remote, screensaver with cameras, language
+- **Sets up Home Assistant from the TV**: adds the TV to the webOS TV integration, creates the scripts and installs automation blueprints, all from Settings
 - **Demo mode** without Home Assistant, sign-in via QR code from a phone
 - **Twelve languages** for the app's own texts; Home Assistant's texts follow the TV language
 
@@ -57,7 +58,9 @@ Builds two variants of the same code into `dist/`:
 
 ## Home Assistant
 
-Notifications, the quick menu and the screensaver are started from Home Assistant through the [LG webOS TV integration](https://www.home-assistant.io/integrations/webostv/). `ha-examples.yaml` contains a ready-made script and automations.
+Notifications, the quick menu and the screensaver are started from Home Assistant through the [LG webOS TV integration](https://www.home-assistant.io/integrations/webostv/).
+
+The easiest way to set that up is from the TV: **Settings → Home Assistant** adds the TV to the integration (the TV asks you to accept the connection), creates the scripts `homedash_notify`, `homedash_menu` and `homedash_screensaver`, and installs two automation blueprints ("show a camera on the TV" and "screensaver when nobody is watching"). This needs an administrator account in Home Assistant. `ha-examples.yaml` shows the same things as YAML.
 
 Launch parameters:
 

@@ -32,7 +32,8 @@ const translations = { entity_component: { "component.climate.entity_component._
 translations.entity_component["component.climate.entity_component._.state.cool"] = "Kyla";
 translations.entity_component["component.climate.entity_component._.state_attributes.fan_mode.state.low"] = "Låg";
 const devices = [{ id: "d1", area_id: "kok" }];
-const calls = [], hits = [], wsAuth = [], userData = {}, tokensMade = [], events = []; let refreshOk = true, revoked = 0, logins = 0;
+const calls = [], hits = [], wsAuth = [], userData = {}, tokensMade = [], events = [], scriptsSaved = {}, blueprintsSaved = {}, flowSteps = [];
+let stateSubGlobal = null, sockets = []; let refreshOk = true, revoked = 0, logins = 0;
 
 const server = http.createServer((req, res) => {
   hits.push(req.method + " " + req.url);
@@ -57,6 +58,19 @@ const server = http.createServer((req, res) => {
       if (b.grant_type === "refresh_token" && b.refresh_token === "REFRESH" && refreshOk) return json(200, { access_token: "ACCESS", expires_in: 1800 });
       return json(400, { error: "invalid_grant" });
     }
+    if (req.url.startsWith("/api/config/config_entries/flow")) { // the webOS TV integration's config flow
+      if (!["Bearer ACCESS", "Bearer LONGLIVED"].includes(req.headers.authorization)) return json(401, {});
+      const body = raw ? JSON.parse(raw) : {}; flowSteps.push([req.url, body]);
+      if (req.url === "/api/config/config_entries/flow") return json(200, { type: "form", flow_id: "f1", step_id: "user", data_schema: [{ name: "host", required: true, type: "string" }] });
+      if (body.host) return json(200, { type: "form", flow_id: "f1", step_id: "pairing", data_schema: [] });
+      states.push(st("media_player.ny_tv", "on", "Ny TV")); entities.push({ entity_id: "media_player.ny_tv", platform: "webostv" });
+      sockets.forEach(sk => sk.send(JSON.stringify({ id: stateSubGlobal, type: "event", event: { data: { entity_id: "media_player.ny_tv", new_state: states[states.length - 1] } } })));
+      return json(200, { type: "create_entry", title: "Ny TV" });
+    }
+    if (req.url.startsWith("/api/config/script/config/")) {
+      if (!["Bearer ACCESS", "Bearer LONGLIVED"].includes(req.headers.authorization)) return json(401, {});
+      scriptsSaved[req.url.split("/").pop()] = JSON.parse(raw); return json(200, { result: "ok" });
+    }
     if (req.url.startsWith("/api/states/")) {
       const found = states.find(x => x.entity_id === decodeURIComponent(req.url.slice(12)));
       if (req.headers.authorization !== "Bearer LONGLIVED") return json(401, {});
@@ -72,7 +86,7 @@ const server = http.createServer((req, res) => {
 });
 new WebSocketServer({ server, path: "/api/websocket" }).on("connection", sock => {
   const tx = m => sock.send(JSON.stringify(m)), ok = (id, result) => tx({ id, type: "result", success: true, result });
-  let stateSub = null; // händelser skickas med prenumerationens id, precis som HA gör
+  let stateSub = null; sockets.push(sock); // händelser skickas med prenumerationens id, precis som HA gör
   tx({ type: "auth_required" });
   sock.on("message", raw => {
     const m = JSON.parse(raw);
@@ -82,7 +96,8 @@ new WebSocketServer({ server, path: "/api/websocket" }).on("connection", sock =>
     if (m.type === "config/area_registry/list") return ok(m.id, areas);
     if (m.type === "config/entity_registry/list") return ok(m.id, entities);
     if (m.type === "config/device_registry/list") return ok(m.id, devices);
-    if (m.type === "subscribe_events") { stateSub = m.id; return ok(m.id, null); }
+    if (m.type === "subscribe_events") { stateSub = stateSubGlobal = m.id; return ok(m.id, null); }
+    if (m.type === "blueprint/save") { blueprintsSaved[m.path] = m; return ok(m.id, null); }
     if (m.type === "frontend/get_user_data") return ok(m.id, { value: userData[m.key] || null });
     if (m.type === "frontend/set_user_data") { userData[m.key] = m.value; return ok(m.id, null); }
     if (m.type === "frontend/get_translations") return ok(m.id, { resources: m.language === "sv" ? translations[m.category] : {} });
@@ -123,6 +138,8 @@ const FAKE_BRIDGE = `window.WebOSServiceBridge = function () {
     if (uri.endsWith(".pair/start")) { window.__started = JSON.parse(params); window.__pair = c => reply({ returnValue: true, subscribed: true, credentials: c }); reply({ returnValue: true, subscribed: true, ip: "192.168.1.96", port: 4567, code: "abc123" }); }
   };
 };`;
+
+const FAKE_BRIDGE_IP = FAKE_BRIDGE.replace("reply({ returnValue: true, wired: {} })", 'reply({ returnValue: true, wired: { ipAddress: "192.168.1.96" } })');
 
 async function browser(profile, launchParams, extraScript, page, lang) {
   const port = debugPort++;
@@ -423,9 +440,9 @@ const panelRows = `[...document.querySelectorAll("#dimmer-rows .prow")].map(x =>
 
   // --- inställningar: undermenyer, teman ---
   await openSettings(b);
-  assert.deepStrictEqual(await b.js(tilesNow), ["settings:look", "settings:show", "settings:hiddenOnes", "settings:overTv", "settings:weather", "settings:hotkeys", "settings:saver", "settings:account"]);
+  assert.deepStrictEqual(await b.js(tilesNow), ["settings:look", "settings:show", "settings:hiddenOnes", "settings:overTv", "settings:weather", "settings:hotkeys", "settings:ha", "settings:saver", "settings:account"]);
   assert.deepStrictEqual(await b.js(`[...document.querySelectorAll("main .tile")].map(x => x.textContent)`),
-    ["UtseendeMörkt", "Visa8 typer visas", "DoldaInga", "Ovanpå TVHela appen", "VäderHem", "Snabbknappar0 på", "SkärmsläckareAv", "Konto127.0.0.1:" + PORT], "varje undermeny visar sitt nuvarande värde");
+    ["UtseendeMörkt", "Visa8 typer visas", "DoldaInga", "Ovanpå TVHela appen", "VäderHem", "Snabbknappar0 på", "Home AssistantSaknas. Tryck för att lägga till", "SkärmsläckareAv", "Konto127.0.0.1:" + PORT], "varje undermeny visar sitt nuvarande värde");
   await b.key("right"); assert.strictEqual(await b.js(focused), "settings:look");
   await b.key("ok"); await sleep(300);
   assert.deepStrictEqual(await b.js(tilesNow), ["theme:dark", "theme:oled", "theme:light", "theme:ocean", "theme:forest", "lang"]);
@@ -437,7 +454,7 @@ const panelRows = `[...document.querySelectorAll("#dimmer-rows .prow")].map(x =>
   assert.strictEqual(userData.homedash.theme, "light", "temat sparas hos Home Assistant");
   await b.shot("9a-ljust-tema.png");
   await b.key("back"); await sleep(200);
-  assert.deepStrictEqual([await b.js(focused), (await b.js(tilesNow)).length], ["settings:look", 8], "Tillbaka går till huvudmenyn med fokus kvar");
+  assert.deepStrictEqual([await b.js(focused), (await b.js(tilesNow)).length], ["settings:look", 9], "Tillbaka går till huvudmenyn med fokus kvar");
   await b.key("ok"); await b.key("ok"); await sleep(200); // mörkt igen
   assert.strictEqual(await b.js(`document.documentElement.dataset.theme`), "dark");
   await b.key("back");
@@ -788,6 +805,27 @@ const panelRows = `[...document.querySelectorAll("#dimmer-rows .prow")].map(x =>
   b = await browser(fresh(), { ...LOGIN, saver: true });
   await sleep(1000); await b.key("ok"); await sleep(1200);
   assert.deepStrictEqual([await b.js(hiddenEl("saver")), await b.js(hiddenEl("viewer")), await b.js(`window.__closed`)], [true, false, undefined], "OK på en kamera öppnar den i appen i stället");
+  b.close();
+
+  // --- Home Assistant sätts upp från TV:n: integrationen, skripten och blueprints ---
+  b = await browser(fresh(), LOGIN, FAKE_BRIDGE_IP);
+  await openSettings(b, "ha");
+  assert.deepStrictEqual(await b.js(tilesNow), ["ha:tv", "ha:scripts", "ha:blueprints"]);
+  assert.strictEqual(await b.js(`document.activeElement.textContent`), "TV in Home AssistantSaknas. Tryck för att lägga till".replace("TV in Home Assistant", "TV:n i Home Assistant"));
+  await b.key("ok"); await sleep(1500);
+  assert.deepStrictEqual(flowSteps.map(x => x[1]), [{ handler: "webostv", show_advanced_options: false }, { host: "192.168.1.96" }, {}], "flödet: starta, ange TV:ns adress, bekräfta parningen. toast=" + await b.js(text("toast")) + " hits=" + hits.slice(-3).join(",") + " focus=" + await b.js(focused));
+  assert.strictEqual(await b.js(`document.activeElement.textContent`), "TV:n i Home AssistantNy TV", "TV:n hittas efter att den lagts till");
+  assert.strictEqual(await b.js(text("toast")), "TV:n är tillagd i Home Assistant");
+  await b.key("right"); await b.key("ok"); await sleep(800);
+  assert.deepStrictEqual(Object.keys(scriptsSaved), ["homedash_notify", "homedash_menu", "homedash_screensaver"]);
+  assert.strictEqual(scriptsSaved.homedash_notify.sequence[1].target.entity_id, "media_player.ny_tv", "skripten pekar på den tillagda TV:n");
+  assert.strictEqual(scriptsSaved.homedash_notify.sequence[1].data.payload.id, "com.frodan.homedash");
+  assert.strictEqual(await b.js(`document.activeElement.className`), "tile dev action on");
+  await b.key("right"); await b.key("ok"); await sleep(800);
+  assert.deepStrictEqual(Object.keys(blueprintsSaved), ["homedash/camera_on_tv.yaml", "homedash/screensaver_when_idle.yaml"]);
+  assert.ok(blueprintsSaved["homedash/camera_on_tv.yaml"].yaml.includes("integration: webostv") && blueprintsSaved["homedash/camera_on_tv.yaml"].allow_override);
+  assert.strictEqual(await b.js(text("toast")), "Blueprints tillagda. Hittas under Automationer i Home Assistant.");
+  await b.key("back"); assert.strictEqual(await b.js(`document.activeElement.textContent`), "Home AssistantNy TV");
   b.close();
 
   // --- språk: appen följer TV:ns språk, okända språk får engelska ---

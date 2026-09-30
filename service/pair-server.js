@@ -10,6 +10,36 @@ const TEXT = {
   en: { title: "Sign in on the TV", server: "Home Assistant address", user: "Username", pass: "Password", token: "Long-lived access token",
         useToken: "Use a token instead", usePass: "Use a password instead", send: "Send to TV", sent: "Sent. Look at the TV.",
         again: "Try again", failed: "Could not send. Is the TV still on the sign-in screen?" },
+  de: { title: "Am Fernseher anmelden", server: "Adresse von Home Assistant", user: "Benutzername", pass: "Passwort", token: "Langlebiger Zugriffstoken",
+        useToken: "Stattdessen Token verwenden", usePass: "Stattdessen Passwort verwenden", send: "An den Fernseher senden", sent: "Gesendet. Bitte auf den Fernseher schauen.",
+        again: "Erneut versuchen", failed: "Senden fehlgeschlagen. Zeigt der Fernseher noch die Anmeldeseite?" },
+  fr: { title: "Se connecter sur la TV", server: "Adresse de Home Assistant", user: "Nom d'utilisateur", pass: "Mot de passe", token: "Jeton d'accès longue durée",
+        useToken: "Utiliser un jeton", usePass: "Utiliser un mot de passe", send: "Envoyer à la TV", sent: "Envoyé. Regardez la TV.",
+        again: "Réessayer", failed: "Envoi impossible. La TV affiche-t-elle toujours l'écran de connexion ?" },
+  es: { title: "Iniciar sesión en la TV", server: "Dirección de Home Assistant", user: "Usuario", pass: "Contraseña", token: "Token de acceso de larga duración",
+        useToken: "Usar un token", usePass: "Usar una contraseña", send: "Enviar a la TV", sent: "Enviado. Mira la TV.",
+        again: "Intentar de nuevo", failed: "No se pudo enviar. ¿Sigue la TV en la pantalla de inicio de sesión?" },
+  it: { title: "Accedi sulla TV", server: "Indirizzo di Home Assistant", user: "Nome utente", pass: "Password", token: "Token di accesso a lunga durata",
+        useToken: "Usa un token", usePass: "Usa una password", send: "Invia alla TV", sent: "Inviato. Guarda la TV.",
+        again: "Riprova", failed: "Invio non riuscito. La TV mostra ancora la schermata di accesso?" },
+  nl: { title: "Inloggen op de tv", server: "Adres van Home Assistant", user: "Gebruikersnaam", pass: "Wachtwoord", token: "Langdurig toegangstoken",
+        useToken: "Gebruik een token", usePass: "Gebruik een wachtwoord", send: "Naar de tv sturen", sent: "Verstuurd. Kijk naar de tv.",
+        again: "Opnieuw proberen", failed: "Versturen mislukt. Staat de tv nog op het inlogscherm?" },
+  da: { title: "Log ind på tv'et", server: "Adresse til Home Assistant", user: "Brugernavn", pass: "Adgangskode", token: "Langtidsgyldigt adgangstoken",
+        useToken: "Brug et token i stedet", usePass: "Brug en adgangskode i stedet", send: "Send til tv'et", sent: "Sendt. Kig på tv'et.",
+        again: "Prøv igen", failed: "Kunne ikke sende. Viser tv'et stadig loginsiden?" },
+  nb: { title: "Logg inn på TV-en", server: "Adresse til Home Assistant", user: "Brukernavn", pass: "Passord", token: "Langvarig tilgangstoken",
+        useToken: "Bruk et token i stedet", usePass: "Bruk et passord i stedet", send: "Send til TV-en", sent: "Sendt. Se på TV-en.",
+        again: "Prøv igjen", failed: "Kunne ikke sende. Viser TV-en fortsatt innloggingssiden?" },
+  fi: { title: "Kirjaudu televisioon", server: "Home Assistantin osoite", user: "Käyttäjätunnus", pass: "Salasana", token: "Pitkäaikainen käyttöoikeustunnus",
+        useToken: "Käytä tunnusta", usePass: "Käytä salasanaa", send: "Lähetä televisioon", sent: "Lähetetty. Katso televisiota.",
+        again: "Yritä uudelleen", failed: "Lähetys epäonnistui. Onko televisio yhä kirjautumissivulla?" },
+  pl: { title: "Zaloguj się na telewizorze", server: "Adres Home Assistant", user: "Nazwa użytkownika", pass: "Hasło", token: "Długoterminowy token dostępu",
+        useToken: "Użyj tokenu", usePass: "Użyj hasła", send: "Wyślij do telewizora", sent: "Wysłano. Spójrz na telewizor.",
+        again: "Spróbuj ponownie", failed: "Nie udało się wysłać. Czy telewizor nadal pokazuje ekran logowania?" },
+  pt: { title: "Iniciar sessão na TV", server: "Endereço do Home Assistant", user: "Nome de utilizador", pass: "Palavra-passe", token: "Token de acesso de longa duração",
+        useToken: "Usar um token", usePass: "Usar uma palavra-passe", send: "Enviar para a TV", sent: "Enviado. Veja a TV.",
+        again: "Tentar novamente", failed: "Não foi possível enviar. A TV ainda mostra o ecrã de início de sessão?" },
 };
 
 const esc = s => String(s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";");
@@ -51,7 +81,7 @@ function page(hint) {
 </form>
 <div id="done" hidden><h1 data-t="sent"></h1><button type="button" id="again" data-t="again"></button></div>
 <script>
-  var TEXT = ${JSON.stringify(TEXT)}, T = TEXT[/^sv/i.test(navigator.language) ? "sv" : "en"], $ = function (id) { return document.getElementById(id); };
+  var TEXT = ${JSON.stringify(TEXT)}, L = (navigator.language || "en").split("-")[0].toLowerCase(), T = TEXT[{ nn: "nb", no: "nb" }[L] || L] || TEXT.en, $ = function (id) { return document.getElementById(id); };
   var tokenMode = false;
   function texts() { [].forEach.call(document.querySelectorAll("[data-t]"), function (e) { e.textContent = T[e.getAttribute("data-t")]; }); }
   texts();

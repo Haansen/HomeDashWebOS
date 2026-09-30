@@ -22,7 +22,7 @@ const THEMES = ["dark", "oled", "light", "ocean", "forest"];
 // remote buttons that can be mapped to an entity: the color buttons and the digits
 const HOTKEYS = [[403, "red"], [404, "green"], [405, "yellow"], [406, "blue"], [49, "1"], [50, "2"], [51, "3"], [52, "4"], [53, "5"], [54, "6"], [55, "7"], [56, "8"], [57, "9"], [48, "0"]];
 const SAVER_AFTER = [0, 1, 2, 5, 10, 30], SAVER_INTERVAL = [5, 10, 15, 30, 60]; // minutes and seconds respectively
-const DEFAULTS = { domains: DEFAULT_DOMAINS, hidden: [], favorites: [], side: "right", startMenu: false, theme: "dark", weather: "", keys: {},
+const DEFAULTS = { domains: DEFAULT_DOMAINS, hidden: [], favorites: [], side: "right", startMenu: false, theme: "dark", weather: "", keys: {}, tv: "",
   saverAfter: 0, saverContent: "cameras", saverInterval: 15, saverEffect: "slide" };
 
 // next value in a list of options, wrapping around
@@ -195,6 +195,132 @@ function panelSpec(s) {
   return out;
 }
 
+// What the app can set up in Home Assistant: scripts and automation blueprints that target the chosen TV.
+// Texts are in English on purpose, since they end up in Home Assistant's own UI.
+const APP_ID = "com.frodan.homedash";
+const LAUNCH = (tv, params) => ({ action: "webostv.command", target: { entity_id: tv }, data: { command: "system.launcher/launch", payload: { id: APP_ID, params } } });
+const TV_ON = tv => ({ condition: "not", conditions: [{ condition: "state", entity_id: tv, state: ["off", "unavailable", "unknown"] }] });
+
+function haScripts(tv) {
+  return {
+    homedash_notify: {
+      alias: "HomeDash: show notification", icon: "mdi:television-shimmer", mode: "queued",
+      description: "Shows a notification on top of whatever the TV is showing, with text and an optional live camera image.",
+      fields: {
+        title: { name: "Title", example: "Doorbell", selector: { text: {} } },
+        message: { name: "Message", example: "Someone is at the door", selector: { text: {} } },
+        camera: { name: "Camera", description: "Live image in the notification. Leave empty for text only.", selector: { entity: { domain: "camera" } } },
+        timeout: { name: "Show for seconds", description: "0 = stays until Back is pressed.", default: 15, selector: { number: { min: 0, max: 300, unit_of_measurement: "s" } } },
+        position: { name: "Corner", default: "top-right", selector: { select: { options: [
+          { label: "Top right", value: "top-right" }, { label: "Top left", value: "top-left" }, { label: "Bottom right", value: "bottom-right" }, { label: "Bottom left", value: "bottom-left" }] } } },
+        actions: { name: "Buttons", description: 'Up to four buttons, e.g. [{"label": "Unlock", "service": "lock.unlock", "entity_id": "lock.front_door"}, {"label": "Ignore", "event": "ignore"}]. A button with event fires homedash_action in Home Assistant.', selector: { object: {} } },
+      },
+      sequence: [TV_ON(tv), LAUNCH(tv, { title: "{{ title | default('') }}", message: "{{ message | default('') }}", camera: "{{ camera | default('') }}",
+        timeout: "{{ timeout | default(15) }}", position: "{{ position | default('top-right') }}", actions: "{{ actions | default([]) }}" })],
+    },
+    homedash_menu: { alias: "HomeDash: open quick menu", icon: "mdi:menu-open", mode: "single", description: "Opens the HomeDash quick menu with favorites on top of whatever the TV is showing.",
+      sequence: [TV_ON(tv), LAUNCH(tv, { menu: true })] },
+    homedash_screensaver: { alias: "HomeDash: start screensaver", icon: "mdi:television-ambient-light", mode: "single", description: "Starts the HomeDash screensaver (cameras, clock and weather) on top of whatever the TV is showing. Any button on the remote brings the TV picture back.",
+      sequence: [TV_ON(tv), LAUNCH(tv, { saver: true })] },
+  };
+}
+
+const BLUEPRINT_TAIL = `condition:
+  - condition: not
+    conditions:
+      - condition: state
+        entity_id: !input tv
+        state: ["off", "unavailable", "unknown"]
+action:
+  - action: webostv.command
+    target:
+      entity_id: !input tv
+    data:
+      command: system.launcher/launch
+      payload:
+        id: ${APP_ID}
+        params:
+`;
+const HA_BLUEPRINTS = {
+  "homedash/camera_on_tv.yaml": `blueprint:
+  name: "HomeDash: show a camera on the TV"
+  description: When a sensor turns on, HomeDash shows a notification with the camera on top of whatever the TV is showing.
+  domain: automation
+  input:
+    tv:
+      name: TV
+      selector:
+        entity:
+          integration: webostv
+          domain: media_player
+    trigger_entity:
+      name: Trigger
+      description: Doorbell, motion or door sensor
+      selector:
+        entity:
+          domain: binary_sensor
+    camera:
+      name: Camera
+      selector:
+        entity:
+          domain: camera
+    title:
+      name: Title
+      default: ""
+    message:
+      name: Message
+      default: ""
+    timeout:
+      name: Show for seconds
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 300
+mode: queued
+trigger:
+  - platform: state
+    entity_id: !input trigger_entity
+    to: "on"
+${BLUEPRINT_TAIL}          title: !input title
+          message: !input message
+          camera: !input camera
+          timeout: !input timeout
+`,
+  "homedash/screensaver_when_idle.yaml": `blueprint:
+  name: "HomeDash: screensaver when nobody is watching"
+  description: Starts the HomeDash screensaver on the TV when a motion sensor has been off for a while. Any button on the remote brings the TV picture back.
+  domain: automation
+  input:
+    tv:
+      name: TV
+      selector:
+        entity:
+          integration: webostv
+          domain: media_player
+    motion:
+      name: Motion sensor
+      selector:
+        entity:
+          domain: binary_sensor
+    minutes:
+      name: Minutes without motion
+      default: 20
+      selector:
+        number:
+          min: 1
+          max: 180
+mode: single
+trigger:
+  - platform: state
+    entity_id: !input motion
+    to: "off"
+    for:
+      minutes: !input minutes
+${BLUEPRINT_TAIL}          saver: true
+`,
+};
+
 // One step left/right. Long ranges move in bigger steps so you get there in reasonable time.
 function stepValue(sl, value, dir) {
   const steps = (sl.max - sl.min) / sl.step, jump = steps > 40 ? sl.step * Math.ceil(steps / 20) : sl.step;
@@ -259,5 +385,5 @@ function parseParams(raw) {
   try { return JSON.parse(raw || "{}") || {}; } catch (e) { return {}; }
 }
 
-if (typeof module !== "undefined") module.exports = { isNotice, nextOption, panelSpec, optionText, ptzCall, WEATHER_ICON, DEFAULTS, THEMES, LANG, ACTIVE, isVisible, areaOf, isActive, stateText, action, slider, stepValue, snap, iconOf, cycle, normalizeUrl, nextTile, parseParams };
+if (typeof module !== "undefined") module.exports = { isNotice, nextOption, panelSpec, optionText, ptzCall, haScripts, HA_BLUEPRINTS, WEATHER_ICON, DEFAULTS, THEMES, LANG, ACTIVE, isVisible, areaOf, isActive, stateText, action, slider, stepValue, snap, iconOf, cycle, normalizeUrl, nextTile, parseParams };
 
