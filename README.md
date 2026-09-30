@@ -54,7 +54,7 @@ On first start the app searches the network for Home Assistant. Sign in on the T
 Builds two variants of the same code into `dist/`:
 
 - `homedash_<version>.ipk` uses the `overlay` window type and can draw on top of other content. Works in Developer Mode on webOS 26.
-- `homedash-store_<version>.ipk` runs in a regular window, for the LG Content Store in case overlay windows are not accepted there. Notifications are then shown inside the app, and the pinned camera and quick menu are not available.
+- `homedash-store_<version>.ipk` runs in a regular window. This is the variant for the LG Content Store: LG's upload rejects packages with `defaultWindowType` in `appinfo.json`, so overlay windows are not available to store apps. Notifications are then shown inside the app, and the pinned camera and quick menu are not available.
 
 ## Home Assistant
 
